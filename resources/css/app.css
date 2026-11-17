@@ -1,0 +1,11 @@
+:root {
+    font-family: 'Instrument Sans', system-ui, sans-serif;
+    color: #172638;
+    background: #f5f7fa;
+}
+
+main {
+    max-width: 72rem;
+    margin: 4rem auto;
+    padding-inline: 1.5rem;
+}

@@ -1,0 +1,14 @@
+.git
+.env*
+!.env.example
+auth.json
+node_modules
+vendor
+public/build
+public/hot
+public/vendor/horizon
+bootstrap/cache/*.php
+storage/logs/*.log
+storage/framework/views/*.php
+storage/framework/sessions/*
+database/*.sqlite*
