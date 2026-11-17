@@ -8,7 +8,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\CreateIssueRequest;
 use App\Http\Requests\UpdateIssueRequest;
 use App\Http\Resources\IssueResource;
-use App\Http\Resources\IssueResourceView;
 use App\Models\Issue;
 use Illuminate\Http\JsonResponse;
 
@@ -39,7 +38,12 @@ class IssueController extends Controller
         return IssueResource::make($issue)->response()->setStatusCode(200);
     }
 
-    public function show(Issue $issue)
+    /**
+     * Retireve single issue
+     * @param Issue $issue
+     * @return JsonResponse
+     */
+    public function show(Issue $issue) : JsonResponse
     {
         $issue = $issue->load([
             'comments' => fn ($query) => $query
