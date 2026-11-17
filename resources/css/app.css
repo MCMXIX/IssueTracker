@@ -1,11 +1,46 @@
-:root {
-    font-family: 'Instrument Sans', system-ui, sans-serif;
-    color: #172638;
-    background: #f5f7fa;
+@import 'tailwindcss';
+
+@theme {
+    --font-sans: Inter, ui-sans-serif, system-ui, sans-serif;
+    --color-canvas: #1b1f26;
+    --color-panel: #242a34;
+    --color-raised: #30384a;
+    --color-line: #383f4d;
+    --color-input: #515b6d;
+    --color-ink: #eef0f4;
+    --color-muted: #afb7c7;
+    --color-brand: #a9baff;
+    --color-brand-hover: #c0ccff;
+    --color-on-brand: #182041;
+    --color-attention: #ffc687;
+    --color-danger: #ffb4ad;
 }
 
-main {
-    max-width: 72rem;
-    margin: 4rem auto;
-    padding-inline: 1.5rem;
+@layer base {
+    html {
+        color-scheme: dark;
+        @apply bg-canvas font-sans text-ink;
+    }
+}
+
+@layer components {
+    .form-field {
+        @apply w-full rounded-lg border border-input bg-canvas px-3 py-2.5 text-base text-ink
+            focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand sm:text-sm;
+    }
+
+    .button-primary,
+    .button-secondary {
+        @apply inline-flex min-h-11 items-center justify-center rounded-lg px-4 py-2 text-sm font-semibold
+            transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand
+            disabled:cursor-wait disabled:opacity-60;
+    }
+
+    .button-primary {
+        @apply bg-brand text-on-brand enabled:hover:bg-brand-hover;
+    }
+
+    .button-secondary {
+        @apply border border-input text-ink enabled:hover:bg-raised;
+    }
 }

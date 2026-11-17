@@ -19,7 +19,7 @@ Paste the generated value into `APP_KEY` in `.env`, then run:
 
 ```sh
 docker compose up -d --wait
-docker compose exec app php artisan migrate
+docker compose exec app php artisan migrate --seed
 ```
 
 The default local addresses are:
@@ -27,6 +27,12 @@ The default local addresses are:
 - Vue entry page: `http://localhost:8000`
 - Laravel health check: `http://localhost:8000/up`
 - Horizon dashboard: `http://localhost:8000/horizon`
+
+Sign in locally with `demo@example.com` and `issue-tracker-demo`. The seeder
+creates this account only in the local environment. The Vue app obtains a CSRF
+cookie from `GET /sanctum/csrf-cookie`, starts a session through `POST /login`,
+reads the signed-in user from `GET /api/me`, and ends the session with
+`POST /logout`.
 
 Check the worker and run the scaffold tests from the running app:
 
