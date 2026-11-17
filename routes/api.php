@@ -10,5 +10,6 @@ Route::get('/me', function (Request $request): array {
 
 
 Route::prefix('/issues')->middleware('auth:web')->group(function() {
-    Route::post('/', [IssueController::class, 'store']);
+    Route::post('/', [IssueController::class, 'store'])->name('issue.store');
+    Route::patch('/{issue}', [IssueController::class, 'update'])->name('issue.update');
 });
