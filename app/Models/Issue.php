@@ -36,4 +36,13 @@ class Issue extends Model
     {
         return $this->hasMany(IssueLog::class);
     }
+
+    /**
+     * Set comment relationship
+     * @return HasMany
+     */
+    public function comments() : HasMany
+    {
+        return $this->hasMany(Comment::class);
+    }
 }
