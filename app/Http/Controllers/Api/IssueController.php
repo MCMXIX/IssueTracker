@@ -4,12 +4,17 @@ namespace App\Http\Controllers\Api;
 
 use App\Actions\Issues\CreateIssue;
 use App\Actions\Issues\UpdateIssue;
+use App\Enums\IssueCategory;
+use App\Enums\IssuePriority;
+use App\Enums\IssueStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CreateIssueRequest;
 use App\Http\Requests\UpdateIssueRequest;
 use App\Http\Resources\IssueResource;
 use App\Models\Issue;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class IssueController extends Controller
 {
@@ -57,5 +62,31 @@ class IssueController extends Controller
         ]);
 
         return IssueResource::make($issue)->response()->setStatusCode(200);
+    }
+
+    /**
+     * Retrieve list of issues
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function index(Request $request): JsonResponse
+    {
+        $filters = $request->validate([
+            'status'   => ['sometimes', 'required', Rule::enum(IssueStatus::class)],
+            'priority' => ['sometimes', 'required', Rule::enum(IssuePriority::class)],
+            'category' => ['sometimes', 'required', Rule::enum(IssueCategory::class)],
+        ]);
+
+        $query = Issue::query();
+        foreach ($filters as $field => $value) {
+            $query->where($field, $value);
+        }
+
+        $issues = $query->latest('created_at')
+            ->orderByDesc('id')
+            ->paginate(15)
+            ->appends($filters);
+
+        return IssueResource::collection($issues)->response();
     }
 }
