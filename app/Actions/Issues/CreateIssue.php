@@ -30,7 +30,7 @@ class CreateIssue
 
             $issue->logs()->create([
                 'user_id' => $actor->getKey(),
-                'action'  => IssueLogAction::Created,
+                'action'  => IssueLogAction::Created->value,
                 'details' => ['message' => 'Issue created by ' . $actor->name],
             ]);
 

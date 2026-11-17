@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -23,11 +23,16 @@ class Issue extends Model
     /** @use HasFactory<UserFactory> */
     use HasFactory;
 
+    /** @return array<string, string> */
+    protected function casts(): array
+    {
+        return ['needs_attention' => 'boolean'];
+    }
+
     /**
      * Set relationship
-     * @return HasMany
      */
-    public function logs() : HasMany
+    public function logs(): HasMany
     {
         return $this->hasMany(IssueLog::class);
     }
