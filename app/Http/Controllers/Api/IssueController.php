@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\CreateIssueRequest;
 use App\Http\Requests\UpdateIssueRequest;
 use App\Http\Resources\IssueResource;
+use App\Http\Resources\IssueResourceView;
 use App\Models\Issue;
 use Illuminate\Http\JsonResponse;
 
@@ -32,9 +33,25 @@ class IssueController extends Controller
      * @param UpdateIssue $updateIssue
      * @return JsonResponse
      */
-    public function update(UpdateIssueRequest $request, Issue $issue, UpdateIssue $updateIssue)
+    public function update(UpdateIssueRequest $request, Issue $issue, UpdateIssue $updateIssue) : JsonResponse
     {
         $issue = $updateIssue->handle($issue, $request->validated(), $request->user());
+        return IssueResource::make($issue)->response()->setStatusCode(200);
+    }
+
+    public function show(Issue $issue)
+    {
+        $issue = $issue->load([
+            'comments' => fn ($query) => $query
+                ->oldest('created_at')
+                ->orderBy('id'),
+            'logs' => fn ($query) => $query
+                ->with('actor:id,name')
+                ->latest('created_at')
+                ->orderByDesc('id')
+                ->limit(10)
+        ]);
+
         return IssueResource::make($issue)->response()->setStatusCode(200);
     }
 }

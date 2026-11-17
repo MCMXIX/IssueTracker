@@ -2,7 +2,6 @@
 
 namespace App\Http\Resources;
 
-use App\Models\Issue;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -24,6 +23,8 @@ class IssueResource extends JsonResource
             'needs_attention'       => (bool) $this->needs_attention,
             'created_at'            => $this->created_at->toISOString(),
             'updated_at'            => $this->updated_at->toISOString(),
+            'comments'              => CommentResource::collection($this->whenLoaded('comments')),
+            'logs'                  => IssueLogResource::collection($this->whenLoaded('logs')),
         ];
     }
 }
