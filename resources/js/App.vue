@@ -1,6 +1,11 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onBeforeUnmount, onMounted, ref } from 'vue';
+import { getCsrfToken } from './api';
 import AppShell from './layouts/AppShell.vue';
+import IssueInbox from './pages/issues/IssueInbox.vue';
+import IssueDetail from './pages/issues/IssueDetail.vue';
+import IssueForm from './pages/issues/IssueForm.vue';
+import type { Issue } from './pages/issues/issue';
 
 interface User {
     id: number;
@@ -14,6 +19,22 @@ const password = ref('');
 const loading = ref(true);
 const pending = ref(false);
 const error = ref('');
+const pathname = window.location.pathname.replace(/\/+$/, '');
+const isCreate = pathname === '/issues/new';
+const issueId = pathname.match(/^\/issues\/(\d+)$/)?.[1];
+
+function sessionExpired() {
+    user.value = null;
+    error.value = 'Your session expired. Sign in to continue.';
+}
+
+function openIssue(issue: Issue) {
+    window.location.assign('/issues/' + issue.id);
+}
+
+function openInbox() {
+    window.location.assign('/');
+}
 
 async function loadUser() {
     const response = await fetch('/api/me', {
@@ -33,24 +54,14 @@ async function loadUser() {
 }
 
 async function postSession(path: string, body?: Record<string, string>) {
-    const csrf = await fetch('/sanctum/csrf-cookie', {
-        headers: { Accept: 'application/json' },
-    });
-    const token = document.cookie
-        .split('; ')
-        .find((cookie) => cookie.startsWith('XSRF-TOKEN='))
-        ?.slice('XSRF-TOKEN='.length);
-
-    if (!csrf.ok || !token) {
-        throw new Error('Could not start a secure session. Try again.');
-    }
+    const token = await getCsrfToken();
 
     const response = await fetch(path, {
         method: 'POST',
         headers: {
             Accept: 'application/json',
             'Content-Type': 'application/json',
-            'X-XSRF-TOKEN': decodeURIComponent(token),
+            'X-XSRF-TOKEN': token,
         },
         body: body ? JSON.stringify(body) : undefined,
     });
@@ -74,6 +85,7 @@ async function postSession(path: string, body?: Record<string, string>) {
 }
 
 onMounted(async () => {
+    window.addEventListener('issue-tracker:session-expired', sessionExpired);
     try {
         await loadUser();
     } catch {
@@ -82,6 +94,8 @@ onMounted(async () => {
         loading.value = false;
     }
 });
+
+onBeforeUnmount(() => window.removeEventListener('issue-tracker:session-expired', sessionExpired));
 
 async function signIn() {
     pending.value = true;
@@ -116,16 +130,24 @@ async function signOut() {
 <template>
     <AppShell v-if="user">
         <template #actions>
-            <button type="button" class="button-secondary" :disabled="pending" @click="signOut">
-                {{ pending ? 'Signing out…' : 'Sign out' }}
-            </button>
+            <div class="flex items-center gap-3">
+                <span class="hidden text-sm text-muted sm:inline">{{ user.name }}</span>
+                <button type="button" class="button-secondary" :disabled="pending" @click="signOut">
+                    {{ pending ? 'Signing out…' : 'Sign out' }}
+                </button>
+            </div>
         </template>
 
-        <section aria-labelledby="account-title">
-            <h1 id="account-title" class="text-2xl font-semibold tracking-tight">{{ user.name }}</h1>
-            <p class="mt-1 text-sm text-muted">{{ user.email }}</p>
-            <p v-if="error" class="mt-4 text-sm text-danger" role="alert">{{ error }}</p>
+        <p v-if="error" class="mb-4 text-sm text-danger" role="alert">{{ error }}</p>
+        <section v-if="isCreate" aria-labelledby="new-issue-title" class="max-w-2xl">
+            <a href="/" class="mb-5 inline-block rounded-sm text-sm text-brand hover:underline focus-visible:outline-2 focus-visible:outline-brand">← Back to inbox</a>
+            <h1 id="new-issue-title" class="mb-5 text-3xl font-semibold tracking-tight">New issue</h1>
+            <div class="rounded-xl border border-line bg-panel p-5 sm:p-6">
+                <IssueForm @saved="openIssue" @cancel="openInbox" />
+            </div>
         </section>
+        <IssueDetail v-else-if="issueId" :issue-id="issueId" />
+        <IssueInbox v-else />
     </AppShell>
 
     <main v-else class="grid min-h-dvh place-items-center px-4 py-10">
