@@ -51,6 +51,25 @@ After changing application code, run `docker compose up -d --build --wait` to
 rebuild the shared app and worker image. Use `docker compose down` to stop the
 stack while retaining the volumes.
 
+## Issue summaries
+
+Horizon generates the summary and suggested next action after an issue is
+created. Changes to title, description, category, or priority clear both
+generated fields and queue a new revision. Status changes and comments preserve
+the existing result. An issue stays `pending` until generation succeeds or
+fails after its retries. Horizon workers use Redis locks to deduplicate jobs
+and skip overlapping execution for the same issue revision.
+
+Set `OPENAI_API_KEY` in your local `.env` to enable OpenAI. The prompt lives in
+`resources/prompts/issue-summary-template.txt`. With a blank key, the worker
+uses deterministic ticket rules. It also uses those rules when OpenAI is
+unavailable or returns unusable output. After changing the configuration, run
+`docker compose up -d --wait` to refresh the running services.
+
+Run `docker compose exec app php artisan migrate` after updating the branch.
+Existing issues get a revision number. A subsequent edit to a summary input
+queues generation for an existing issue.
+
 ## Code structure
 
 | Path | Responsibility |

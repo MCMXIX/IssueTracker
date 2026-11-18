@@ -1,13 +1,17 @@
 <?php
 
+use App\Jobs\GenerateIssueSummary;
 use App\Models\Issue;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 
 uses(TestCase::class, RefreshDatabase::class);
 
 beforeEach(function () {
+    Queue::fake([GenerateIssueSummary::class]);
+
     $this->issue = Issue::query()->create([
         'title'           => 'Duplicate charge',
         'description'     => 'Two charges appeared on the statement.',

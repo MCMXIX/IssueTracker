@@ -4,6 +4,8 @@ namespace App\Actions\Issues;
 
 use App\Enums\IssueLogAction;
 use App\Enums\IssuePriority;
+use App\Enums\IssueSummaryStatus;
+use App\Jobs\GenerateIssueSummary;
 use App\Models\Issue;
 use App\Models\User;
 use Illuminate\Support\Arr;
@@ -42,14 +44,26 @@ class UpdateIssue
                     ];
                 }
 
+                $regenerateSummary = $lockedIssue->isDirty(['title', 'description', 'category', 'priority']);
+                if ($regenerateSummary) {
+                    $lockedIssue->summary_revision++;
+                    $lockedIssue->summary = null;
+                    $lockedIssue->suggested_next_action = null;
+                    $lockedIssue->summary_status = IssueSummaryStatus::Pending->value;
+                }
+
                 $lockedIssue->save();
                 $lockedIssue->logs()->create([
                     'user_id' => $actor->getKey(),
                     'action'  => IssueLogAction::Updated->value,
                     'details' => ['changes' => $changes],
                 ]);
+
+                if ($regenerateSummary) {
+                    GenerateIssueSummary::dispatch($lockedIssue->getKey(), $lockedIssue->summary_revision)->afterCommit();
+                }
             }
-                
+
             return $lockedIssue;
         });
     }
