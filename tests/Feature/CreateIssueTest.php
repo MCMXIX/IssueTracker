@@ -1,14 +1,18 @@
 <?php
 
+use App\Jobs\GenerateIssueSummary;
 use App\Models\IssueLog;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Tests\TestCase;
 
 uses(TestCase::class, RefreshDatabase::class);
 
 beforeEach(function () {
+    Queue::fake([GenerateIssueSummary::class]);
+
     $this->payload = [
         'title'       => 'Customer was charged twice',
         'description' => 'Two charges appeared for invoice INV-4837.',

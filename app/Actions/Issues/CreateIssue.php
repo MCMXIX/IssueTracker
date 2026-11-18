@@ -5,6 +5,7 @@ namespace App\Actions\Issues;
 use App\Enums\IssueLogAction;
 use App\Enums\IssuePriority;
 use App\Enums\IssueStatus;
+use App\Jobs\GenerateIssueSummary;
 use App\Models\Issue;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -34,7 +35,10 @@ class CreateIssue
                 'details' => ['message' => 'Issue created by ' . $actor->name],
             ]);
 
-            return $issue->refresh();
+            $issue->refresh();
+            GenerateIssueSummary::dispatch($issue->getKey(), $issue->summary_revision)->afterCommit();
+
+            return $issue;
         });
     }
 }
