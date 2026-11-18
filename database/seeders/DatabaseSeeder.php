@@ -18,6 +18,8 @@ class DatabaseSeeder extends Seeder
                 ['email' => 'demo2@example.com'],
                 ['name' => 'Demo User 2', 'password' => 'issue-tracker-demo'],
             );
+
+            $this->call(DemoIssueSeeder::class);
         }
     }
 }
